@@ -1,0 +1,95 @@
+#Base.html
+
+<!doctype html>
+<html>
+  <head>
+    <title>Smart Inventory</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+      body { font-family: Arial, sans-serif; margin: 20px; }
+      .container { max-width: 900px; margin: auto; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
+      .low { color: red; font-weight: bold; }
+      .btn { padding: 6px 10px; text-decoration: none; border: 1px solid #333; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Smart Inventory & Orders</h1>
+      <p>
+        <a class="btn" href="{{ url_for('index') }}">Products</a>
+        <a class="btn" href="{{ url_for('new_product') }}">Add product</a>
+        <a class="btn" href="{{ url_for('new_order') }}">New order</a>
+      </p>
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <ul>
+          {% for m in messages %}
+            <li>{{ m }}</li>
+          {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+      {% block body %}{% endblock %}
+    </div>
+  </body>
+</html>
+
+
+
+#Index.html
+{% extends "base.html" %}
+{% block body %}
+  <h2>Products</h2>
+  <table>
+    <tr><th>Name</th><th>Price (INR)</th><th>Qty</th><th>Actions</th></tr>
+    {% for p in products %}
+      <tr>
+        <td>{{ p.name }}</td>
+        <td>{{ "%.2f"|format(p.price) }}</td>
+        <td>{% if p.qty <= low_stock_threshold %}<span class="low">{{ p.qty }}</span>{% else %}{{ p.qty }}{% endif %}</td>
+        <td>
+          <a class="btn" href="{{ url_for('edit_product', pid=p.id) }}">Edit</a>
+          <a class="btn" href="{{ url_for('delete_product', pid=p.id) }}">Delete</a>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endblock %}
+
+
+
+order_form.html
+{% extends "base.html" %}
+{% block body %}
+  <h2>New Order</h2>
+  <form method="POST">
+    {{ form.hidden_tag() }}
+    <p>{{ form.customer_name.label }}<br/>{{ form.customer_name(size=40) }}</p>
+    <p>{{ form.customer_email.label }}<br/>{{ form.customer_email(size=40) }}</p>
+    <h3>Select items</h3>
+    {% for p in products %}
+      <div>
+        <label>{{ p.name }} (INR {{ "%.2f"|format(p.price) }}) - stock: {{ p.qty }}</label>
+        <input type="number" name="qty_{{ p.id }}" min="0" max="{{ p.qty }}" value="0"/>
+      </div>
+    {% endfor %}
+    <p>{{ form.submit() }}</p>
+  </form>
+{% endblock %}
+
+
+product_form.html
+{% extends "base.html" %}
+{% block body %}
+  <h2>{{ title }}</h2>
+  <form method="POST">
+    {{ form.hidden_tag() }}
+    <p>{{ form.name.label }}<br/>{{ form.name(size=40) }}</p>
+    <p>{{ form.description.label }}<br/>{{ form.description(rows=3, cols=40) }}</p>
+    <p>{{ form.price.label }}<br/>{{ form.price() }}</p>
+    <p>{{ form.qty.label }}<br/>{{ form.qty() }}</p>
+    <p>{{ form.submit() }}</p>
+  </form>
+{% endblock %}
