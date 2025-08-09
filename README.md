@@ -43,7 +43,6 @@ smart_inventory/
 
 
 ⚙️ Installation & Setup
-git clone https://github.com/yourusername/smart_inventory.git
 cd smart_inventory
 
 2️⃣ Create Virtual Environment
